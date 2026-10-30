@@ -1,0 +1,35 @@
+# Trecho de referencia do /etc/csf/csf.conf (ConfigServer Security & Firewall)
+# Somente as chaves discutidas na baseline. Ajustar ao servidor; nao copiar inteiro.
+# Apos editar: csf -r (recarrega regras) ou systemctl restart lfd (so o daemon).
+
+TESTING = "0"
+
+# Conexoes simultaneas por IP nas portas web (porta;limite,porta;limite).
+# 150 cobre NAT de redes grandes sem permitir que um unico IP segure todos os workers.
+CONNLIMIT = "80;150,443;150"
+
+# Bans por eventos do ModSecurity. Limiar baixo + ban permanente = risco de banir
+# dependencias legitimas (ferramenta de gestao, proxies de CDN). Se mantiver,
+# colocar essas dependencias em csf.allow / csf.ignore.
+LF_MODSEC = "5"
+
+# Bans por excesso de 403. Se > 0, bloqueios de varredura no Apache devem usar 410.
+LF_APACHE_403 = "0"
+
+# Alertas por processo de usuario: em hospedagem compartilhada geram milhares de
+# e-mails/dia sem acao possivel. "0" desliga.
+PT_USERMEM = "0"
+PT_USERRSS = "0"
+PT_USERTIME = "0"
+
+# Tamanho da lista de bans. Monitorar ocupacao: lista cheia empurra atacantes reais
+# para fora e costuma indicar falso positivo em massa.
+DENY_IP_LIMIT = "200"
+
+# --- /etc/csf/csf.allow (dependencias legitimas, com comentario de origem) ---
+# 203.0.113.17  # ferramenta de gestao de sites - lista oficial do fornecedor, revisada em <mes/ano>
+#
+# --- /etc/csf/csf.ignore (proxies de CDN: lfd nao bane, firewall nao libera) ---
+# # BEGIN CDN
+# 198.51.100.0/24  # faixa publicada pela CDN
+# # END CDN

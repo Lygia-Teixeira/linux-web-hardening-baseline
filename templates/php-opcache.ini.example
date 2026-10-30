@@ -1,0 +1,26 @@
+; OPcache para PHP-FPM em hospedagem compartilhada (cPanel EA4)
+; Arquivo: /opt/cpanel/ea-phpXX/root/etc/php.d/zz-opcache.ini
+; ("zz-" para ser lido depois do 10-opcache.ini do pacote e sobrepor os valores)
+;
+; Dimensionamento: memoria e max_accelerated_files proporcionais ao numero de
+; arquivos .php das contas que usam essa versao. Cache cheio = taxa de acerto
+; baixa (em um caso real, 128 MB para ~258 mil arquivos dava ~6% de acerto).
+;   find /home/*/public_html -name '*.php' | wc -l
+;
+; Instalar o pacote opcache na MESMA versao do PHP ja instalado, para nao puxar
+; uma atualizacao do PHP junto.
+; Aplicar: /scripts/restartsrv_apache_php_fpm
+; Conferir: /opt/cpanel/ea-phpXX/root/usr/sbin/php-fpm -i | grep -E 'opcache\.(enable|memory|max_acc|validate_perm|restrict)'
+
+opcache.enable=1
+opcache.memory_consumption=1024
+opcache.interned_strings_buffer=64
+opcache.max_accelerated_files=100000
+opcache.validate_timestamps=1
+opcache.revalidate_freq=2
+
+; Isolamento entre contas no mesmo servidor
+opcache.validate_permission=1
+; Somente scripts sob /root/ podem chamar opcache_get_status() e afins
+; (impede que sites leiam estatisticas e caminhos de outras contas)
+opcache.restrict_api=/root/

@@ -1,0 +1,30 @@
+; Registros de autenticacao de e-mail - exemplo para a zona example.com
+; Endereco do servidor de e-mail: 192.0.2.10 (faixa de documentacao, RFC 5737)
+;
+; Regras:
+; - Um unico registro SPF por nome. Manter "include:" de servicos que o dominio
+;   ainda usa (ex.: provedor antigo durante migracao).
+; - DKIM: copiar a chave publica gerada pelo painel (cPanel > E-mail >
+;   Entregabilidade do e-mail). Nunca publicar a chave privada.
+; - DMARC: comecar com p=none so para coletar relatorios por poucos dias; o alvo
+;   da baseline e p=quarantine (ou p=reject quando todo envio legitimo estiver
+;   alinhado). rua= habilita relatorios agregados.
+; - Ao migrar um dominio de provedor, recriar SPF/DKIM/DMARC no DNS novo: e comum
+;   o DMARC existir no provedor antigo e sumir na migracao.
+; - O hostname do PROPRIO servidor tambem precisa de SPF (e, idealmente, DKIM),
+;   senao os alertas enviados pelo root sao rejeitados por grandes provedores.
+
+example.com.                  3600 IN TXT "v=spf1 +a +mx +ip4:192.0.2.10 ~all"
+default._domainkey.example.com. 3600 IN TXT "v=DKIM1; k=rsa; p=<CHAVE-PUBLICA-GERADA-PELO-PAINEL>"
+_dmarc.example.com.           3600 IN TXT "v=DMARC1; p=quarantine; rua=mailto:<caixa-de-relatorios-dmarc>"
+
+; Hostname do servidor (alertas do sistema)
+srv-01.example.com.           3600 IN A   192.0.2.10
+srv-01.example.com.           3600 IN TXT "v=spf1 +a ~all"
+; PTR (no provedor do IP): 10.2.0.192.in-addr.arpa. IN PTR srv-01.example.com.
+
+; Conferir:
+;   dig +short TXT example.com | grep spf
+;   dig +short TXT default._domainkey.example.com | cut -c1-40
+;   dig +short TXT _dmarc.example.com
+;   dig +short -x 192.0.2.10

@@ -1,0 +1,14 @@
+# Exim (cPanel) - mesmos controles de TLS do Apache no SMTP (porta 25 STARTTLS)
+#
+# WHM: Service Configuration > Exim Configuration Manager > Advanced Editor.
+# Linha de comando: os valores ficam em /etc/exim.conf.localopts.
+#
+# Backup:   B=/root/bkp-exim-$(date +%Y%m%d); mkdir -p $B; cp -p /etc/exim.conf /etc/exim.conf.localopts $B/
+# Aplicar:  editar as duas chaves abaixo; /scripts/buildeximconf
+# Validar:  exim -bV >/dev/null && /scripts/restartsrv_exim
+#           (se exim -bV falhar: restaurar $B/exim.conf.localopts e rodar buildeximconf de novo)
+# Conferir: scripts/check-tls.sh --smtp <hostname-de-email> 25
+#           grep " <= .*X=TLS" /var/log/exim_mainlog | tail -3   (mensagens externas seguem entrando por TLS)
+
+openssl_options= +no_sslv2 +no_sslv3 +no_tlsv1 +no_tlsv1_1 +cipher_server_preference
+tls_require_ciphers=ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256
